@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Trợ lý">
+<meta name="theme-color" content="#1d5e4f">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<title>Trợ lý Thời gian</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Bố cục: sổ tay một cột trên điện thoại; ma trận 2x2 trên màn rộng; thanh chuyển màn dính trên cùng, nút + nổi góc dưới */
+:root{
+  --bg:#eef2ef; --surface:#ffffff; --surface2:#f6f8f6; --ink:#16211c; --muted:#5b6a63; --line:#d9e1dc;
+  --accent:#1d5e4f; --accent-ink:#ffffff;
+  --q1:#b93a28; --q1s:#fbe8e3; --q2:#1c7a50; --q2s:#e0f2e8; --q3:#a86e12; --q3s:#faefd8; --q4:#66706b; --q4s:#e9ecea;
+  --a-cong_viec:#2d5c8c; --a-hoc_tap:#6a4db3; --a-quan_he:#14868a; --a-the_thao:#3f8a2c; --a-ho_hang:#93592a; --a-con_cai:#c04b78; --a-gia_dinh:#d07419;
+  --shadow:0 1px 2px rgba(22,33,28,.06),0 4px 14px rgba(22,33,28,.06);
+  --f-display:"Bricolage Grotesque","Be Vietnam Pro",system-ui,sans-serif;
+  --f-body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1513; --surface:#18201d; --surface2:#1e2824; --ink:#e7eeea; --muted:#9aaba3; --line:#2b3732;
+  --accent:#5fc3a5; --accent-ink:#0b1512;
+  --q1:#f08a77; --q1s:#3a1f1a; --q2:#6fd29f; --q2s:#163026; --q3:#e9b45a; --q3s:#33280f; --q4:#a3ada8; --q4s:#252d2a;
+  --a-cong_viec:#7fb0e6; --a-hoc_tap:#b49cf2; --a-quan_he:#5fd0d3; --a-the_thao:#8fd26f; --a-ho_hang:#dba273; --a-con_cai:#f08cb4; --a-gia_dinh:#f3ad5f;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0f1513; --surface:#18201d; --surface2:#1e2824; --ink:#e7eeea; --muted:#9aaba3; --line:#2b3732;
+  --accent:#5fc3a5; --accent-ink:#0b1512;
+  --q1:#f08a77; --q1s:#3a1f1a; --q2:#6fd29f; --q2s:#163026; --q3:#e9b45a; --q3s:#33280f; --q4:#a3ada8; --q4s:#252d2a;
+  --a-cong_viec:#7fb0e6; --a-hoc_tap:#b49cf2; --a-quan_he:#5fd0d3; --a-the_thao:#8fd26f; --a-ho_hang:#dba273; --a-con_cai:#f08cb4; --a-gia_dinh:#f3ad5f;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark;}
+
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 110px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Đầu trang */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-top:14px;padding-bottom:10px}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand h1{font-size:22px;font-weight:800}
+.status{font-size:12px;color:var(--muted)}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px}
+.tabs a{text-align:center;text-decoration:none;color:var(--muted);font-weight:600;font-size:13.5px;padding:8px 4px;border-radius:9px;white-space:nowrap}
+.tabs a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+
+section.view{display:flex;flex-direction:column;gap:18px;margin-top:8px}
+.hello h2{font-size:26px;font-weight:800}
+.hello p{margin:2px 0 0;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
+.pill.red{color:var(--q1);background:var(--q1s);border-color:transparent}
+.pill.green{color:var(--q2);background:var(--q2s);border-color:transparent}
+
+.block{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.block-h{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.block-h h3{font-size:16px;font-weight:600;font-family:var(--f-body)}
+.block-h .sub{font-size:12.5px;color:var(--muted)}
+.empty{color:var(--muted);font-size:14px;padding:6px 0}
+.list{display:flex;flex-direction:column;gap:8px}
+
+/* Thẻ việc */
+.task{display:flex;gap:10px;align-items:flex-start;background:var(--surface2);border-radius:10px;padding:10px;border-left:4px solid var(--qc,var(--line))}
+.task.q1{--qc:var(--q1)}.task.q2{--qc:var(--q2)}.task.q3{--qc:var(--q3)}.task.q4{--qc:var(--q4)}
+.tick{flex:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--qc,var(--muted));background:transparent;margin-top:1px;display:grid;place-items:center;padding:0}
+.tick svg{width:14px;height:14px;opacity:0}
+.task.done .tick{background:var(--qc)}
+.task.done .tick svg{opacity:1;stroke:var(--surface)}
+.task.done .ttl{text-decoration:line-through;color:var(--muted)}
+.tbody{flex:1;min-width:0;background:none;border:0;text-align:left;padding:0}
+.ttl{font-weight:500;overflow-wrap:anywhere}
+.meta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px;color:var(--muted);margin-top:2px}
+.meta .late{color:var(--q1);font-weight:600}
+.meta .soon{color:var(--q3);font-weight:600}
+.area{display:inline-flex;align-items:center;gap:5px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ac,var(--muted));flex:none}
+.qtag{font-size:11.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--qc)}
+
+/* Ma trận */
+.axis{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.matrix{display:grid;grid-template-columns:1fr;gap:12px}
+@media (min-width:760px){.matrix{grid-template-columns:1fr 1fr}}
+.quad{border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--qs);border:1px solid transparent;min-width:0}
+.quad.q1{--qc:var(--q1);--qs:var(--q1s)}.quad.q2{--qc:var(--q2);--qs:var(--q2s)}.quad.q3{--qc:var(--q3);--qs:var(--q3s)}.quad.q4{--qc:var(--q4);--qs:var(--q4s)}
+.quad .task{background:var(--surface)}
+.quad-h{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.quad-h h3{font-size:17px;font-weight:800;color:var(--qc)}
+.quad-h p{margin:0;font-size:13px;color:var(--muted)}
+.num{font-family:var(--f-display);font-weight:800;font-size:28px;line-height:1;color:var(--qc);opacity:.85}
+.addq{align-self:flex-start;background:transparent;border:1px dashed var(--qc);color:var(--qc);border-radius:8px;padding:5px 10px;font-weight:600;font-size:13px}
+details.done-list summary{cursor:pointer;color:var(--muted);font-weight:600;padding:4px 0}
+
+/* Lịch tuần */
+.week{display:flex;flex-direction:column;gap:10px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.day.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.day-h{display:flex;justify-content:space-between;align-items:baseline}
+.day-h b{font-family:var(--f-display);font-size:16px}
+.day-h span{font-size:12.5px;color:var(--muted)}
+.rt{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
+.rt:first-of-type{border-top:0}
+.rt .time{font-variant-numeric:tabular-nums;font-weight:600;font-size:13.5px;width:46px;flex:none}
+.rt .bar{width:4px;align-self:stretch;border-radius:2px;background:var(--ac);flex:none}
+.rt .info{flex:1;min-width:0;background:none;border:0;padding:0;text-align:left}
+.rt .info small{display:block;color:var(--muted);font-size:12px}
+.chk{flex:none;border:1px solid var(--line);background:var(--surface2);border-radius:999px;font-size:12.5px;font-weight:600;padding:4px 10px;color:var(--muted)}
+.chk.on{background:var(--ac);border-color:transparent;color:var(--surface)}
+.chk:disabled{opacity:.45;cursor:default}
+
+/* Cân bằng */
+.bars{display:flex;flex-direction:column;gap:12px}
+.brow{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:center}
+@media (max-width:480px){.brow{grid-template-columns:1fr}}
+.brow .lbl{font-weight:500;display:flex;gap:6px;align-items:center}
+.track{position:relative;height:22px;background:var(--surface2);border-radius:6px;overflow:hidden}
+.track .plan{position:absolute;inset:0 auto 0 0;background:var(--ac);opacity:.22}
+.track .did{position:absolute;inset:0 auto 0 0;background:var(--ac)}
+.brow .val{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;grid-column:2}
+@media (max-width:480px){.brow .val{grid-column:1}}
+.stack{display:flex;height:26px;border-radius:7px;overflow:hidden;background:var(--surface2)}
+.stack div{height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.note{font-size:13.5px;color:var(--muted);margin:0}
+
+.nudge{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;background:var(--surface2);flex-wrap:wrap}
+.nudge p{margin:0;flex:1;min-width:180px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:7px 12px;font-weight:600;font-size:13.5px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.danger{color:var(--q1);border-color:var(--q1)}
+.btn.ghost{background:transparent}
+a.btn{text-decoration:none;display:inline-flex;align-items:center;gap:6px;color:inherit}
+.sample{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px dashed var(--q3);background:var(--q3s);border-radius:12px;padding:10px 12px;font-size:14px}
+
+.fab{position:fixed;right:max(18px,calc(env(safe-area-inset-right,0px) + 12px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:6;display:flex;gap:8px}
+.fab button{border:0;border-radius:999px;padding:13px 18px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.18);background:var(--accent);color:var(--accent-ink)}
+.fab button.alt{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+
+/* Bảng nhập */
+.backdrop{position:fixed;inset:0;background:rgba(10,16,13,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+@media (min-width:700px){.backdrop{align-items:center}}
+.sheet{background:var(--surface);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px}
+@media (min-width:700px){.sheet{border-radius:18px}}
+.sheet h2{font-size:20px;font-weight:800}
+.field{display:flex;flex-direction:column;gap:5px}
+.field > label,.field > .lab{font-size:12.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:16px}
+.field textarea{min-height:64px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qpick{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;align-items:stretch}
+.qpick .ax{font-size:11.5px;color:var(--muted);font-weight:600;display:flex;align-items:center;justify-content:center;text-align:center}
+.qpick .ax.v{writing-mode:vertical-rl;transform:rotate(180deg);padding:0 2px}
+.qbtn{border:2px solid transparent;border-radius:10px;padding:10px 8px;text-align:left;background:var(--qs);color:var(--ink);display:flex;flex-direction:column;gap:2px}
+.qbtn b{color:var(--qc);font-size:14px}
+.qbtn small{color:var(--muted);font-size:12px;line-height:1.3}
+.qbtn.q1{--qc:var(--q1);--qs:var(--q1s)}.qbtn.q2{--qc:var(--q2);--qs:var(--q2s)}.qbtn.q3{--qc:var(--q3);--qs:var(--q3s)}.qbtn.q4{--qc:var(--q4);--qs:var(--q4s)}
+.qbtn[aria-pressed="true"]{border-color:var(--qc)}
+.days{display:flex;flex-wrap:wrap;gap:6px}
+.days button{border:1px solid var(--line);background:var(--surface2);border-radius:9px;min-width:44px;padding:8px 6px;font-weight:600}
+.days button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center}
+.actions .grp{display:flex;gap:8px;flex-wrap:wrap}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px;color:var(--q1)}
+
+.nhac{display:flex;gap:10px;align-items:flex-start;background:var(--surface2);border-radius:10px;padding:10px 12px;cursor:pointer}
+.nhac input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex:none}
+.nhac span{display:flex;flex-direction:column}
+.nhac small{color:var(--muted);font-size:12.5px}
+#status{cursor:pointer}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:14px;z-index:30;max-width:calc(100% - 32px)}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.6}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><h1>Trợ lý Thời gian</h1><span class="status" id="status">Đang mở sổ…</span></div>
+    <nav class="tabs" aria-label="Các màn">
+      <a href="#hom-nay" data-v="hom-nay">Hôm nay</a>
+      <a href="#ma-tran" data-v="ma-tran">Ma trận</a>
+      <a href="#lich-tuan" data-v="lich-tuan">Lịch tuần</a>
+      <a href="#can-bang" data-v="can-bang">Cân bằng</a>
+    </nav>
+  </header>
+  <main id="app"></main>
+</div>
+<div class="fab">
+  <button class="alt" id="addR" type="button">+ Lịch cố định</button>
+  <button id="addT" type="button">+ Việc mới</button>
+</div>
+<div id="modal"></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+// ---------- Danh mục ----------
+const AREAS=[
+  {id:"cong_viec",name:"Công việc"},
+  {id:"hoc_tap",name:"Học tập"},
+  {id:"quan_he",name:"Giao lưu, quan hệ"},
+  {id:"the_thao",name:"Thể thao, sức khoẻ"},
+  {id:"ho_hang",name:"Họ hàng"},
+  {id:"con_cai",name:"Con cái"},
+  {id:"gia_dinh",name:"Vợ chồng, gia đình"}
+];
+const AMAP=Object.fromEntries(AREAS.map(a=>[a.id,a]));
+const Q={
+  1:{name:"Gấp và quan trọng",verb:"Làm ngay",hint:"Khủng hoảng, hạn chót, việc khách đang chờ."},
+  2:{name:"Quan trọng, chưa gấp",verb:"Lên lịch làm",hint:"Học, sức khoẻ, gia đình, kế hoạch. Ô làm nên kết quả lâu dài."},
+  3:{name:"Gấp, không quan trọng",verb:"Giao người khác",hint:"Việc vặt, cuộc gọi, giấy tờ người khác làm được."},
+  4:{name:"Không gấp, không quan trọng",verb:"Bỏ bớt",hint:"Lướt mạng, họp không cần thiết, việc không đem lại gì."}
+};
+const DOW=["Chủ nhật","Thứ Hai","Thứ Ba","Thứ Tư","Thứ Năm","Thứ Sáu","Thứ Bảy"];
+const DOWS=["CN","T2","T3","T4","T5","T6","T7"];
+const ORDER=[1,2,3,4,5,6,0]; // tuần bắt đầu từ thứ Hai
+
+// ---------- Ngày giờ ----------
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parse=s=>{const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const weekStart=d=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());return addDays(x,-((x.getDay()+6)%7))};
+const today=()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate())};
+const dm=d=>pad(d.getDate())+"/"+pad(d.getMonth()+1);
+const diffDays=(a,b)=>Math.round((a-b)/864e5);
+function dueLabel(t){
+  if(!t.due) return null;
+  const d=parse(t.due), n=diffDays(d,today()), tm=t.time?(" "+t.time):"";
+  if(n<0) return {cls:"late",txt:"Quá hạn "+(-n)+" ngày"};
+  if(n===0) return {cls:"soon",txt:"Hôm nay"+tm};
+  if(n===1) return {cls:"soon",txt:"Mai"+tm};
+  return {cls:"",txt:DOWS[d.getDay()]+" "+dm(d)+tm};
+}
+const hm=min=>{const h=Math.floor(min/60),m=min%60;return (h?h+" giờ":"")+(h&&m?" ":"")+(m?m+" phút":"")||"0 giờ"};
+
+// ---------- Tiện ích ----------
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+let toastT;
+function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2600)}
+const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+// ---------- Kho dữ liệu: Google Sheet của anh qua Apps Script ----------
+const API="https://script.google.com/macros/s/AKfycbzKoKDolgHRykyz5q8VqFDLKKBHvKyKixijFjPxxjMp_6ecqWjnW1R1DtLfPNbJe5SW/exec";
+const S={tasks:[],routines:[],checks:{},mode:"loading",pending:0};
+const LS={get(k,f){try{const v=localStorage.getItem("tl_"+k);return v?JSON.parse(v):f}catch(e){return f}},set(k,v){try{if(v==null)localStorage.removeItem("tl_"+k);else localStorage.setItem("tl_"+k,JSON.stringify(v))}catch(e){}}};
+let KEY=LS.get("ma","");
+const clean=o=>JSON.parse(JSON.stringify(o));
+function goi(fn,...args){
+  return fetch(API,{method:"POST",redirect:"follow",credentials:"omit",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({fn,args:[KEY].concat(args)})})
+    .catch(()=>{throw new Error("Không kết nối được. Kiểm tra mạng rồi thử lại.")})
+    .then(r=>r.json())
+    .then(j=>{if(!j.ok){const e=new Error(j.loi||"Có lỗi, thử lại.");if(j.loi==="SAI_MA")e.saiMa=true;throw e}return j.data});
+}
+// Ghi lần lượt từng lệnh để Sheet không bị chen ngang
+let chain=Promise.resolve();
+function queue(fn,okMsg){
+  S.pending++;setStatus();
+  chain=chain.then(fn).then(r=>{S.pending--;setStatus();if(okMsg)toast(okMsg);return r}).catch(e=>{S.pending--;console.error(e);
+    if(e.saiMa){khoa();return}
+    toast("Chưa lưu được: "+e.message);taiLai()});
+  return chain;
+}
+function capNhat(arr,obj){const i=arr.findIndex(x=>x.id===obj.id);if(i<0)arr.push(obj);else arr[i]=obj}
+const store={
+  saveTask(t,msg){capNhat(S.tasks,t);render();queue(()=>goi("luuViec",t).then(s=>{capNhat(S.tasks,s);render()}),msg)},
+  delTask(id){S.tasks=S.tasks.filter(x=>x.id!==id);render();queue(()=>goi("xoaViec",id))},
+  saveRoutine(r,msg){capNhat(S.routines,r);render();queue(()=>goi("luuLich",r).then(s=>{capNhat(S.routines,s);render()}),msg)},
+  delRoutine(id){S.routines=S.routines.filter(x=>x.id!==id);render();queue(()=>goi("xoaLich",id))},
+  toggleCheck(rid,ds){const c=clean(S.checks||{});c.done=c.done||{};const arr=c.done[rid]||[];
+    c.done[rid]=arr.includes(ds)?arr.filter(x=>x!==ds):arr.concat(ds);S.checks=c;render();queue(()=>goi("danhDau",rid,ds))}
+};
+
+function setStatus(){
+  const el=$("#status");if(!el)return;
+  if(S.pending>0) el.textContent="Đang lưu…";
+  else if(S.mode==="ok") el.textContent="Đã lưu vào Google Sheet";
+  else if(S.mode==="loi") el.textContent="Chưa tải được, bấm để thử lại";
+  else if(S.mode==="khoa") el.textContent="";
+  else el.textContent="Đang tải…";
+}
+let dangTai=false;
+function taiLai(){
+  if(!KEY||dangTai)return Promise.resolve();
+  dangTai=true;
+  return goi("taiDuLieu",iso(weekStart(today()))).then(d=>{
+    dangTai=false;S.tasks=d.tasks||[];S.routines=d.routines||[];S.checks=d.checks||{};S.mode="ok";LS.set("banSao",{tasks:S.tasks,routines:S.routines,checks:S.checks});render();
+  }).catch(e=>{dangTai=false;if(e.saiMa){khoa();return}S.mode="loi";setStatus();toast(e.message)});
+}
+function khoa(msg){
+  KEY="";LS.set("ma",null);S.mode="khoa";setStatus();
+  $("#app").innerHTML='<section class="view"><div class="block" style="max-width:420px;margin:24px auto 0"><h2 style="font-size:22px">Mở Trợ lý Thời gian</h2>'+
+    '<p class="note">Nhập mã mở khoá (6 số). Mã xem trong Google Sheet “Trợ lý Thời gian”, menu ⏱ → Xem mã mở khoá. Máy này sẽ nhớ mã, lần sau không phải nhập.</p>'+
+    '<form id="fk" class="field" autocomplete="off"><input id="mk" inputmode="numeric" maxlength="12" placeholder="Mã mở khoá" aria-label="Mã mở khoá"><button class="btn primary" type="submit" style="margin-top:8px">Mở</button></form>'+
+    '<p class="note" id="mkloi" style="color:var(--q1)">'+(msg?esc(msg):"")+'</p></div></section>';
+  document.querySelector(".fab").hidden=true;
+  $("#fk").onsubmit=e=>{e.preventDefault();const v=$("#mk").value.trim();if(!v)return;KEY=v;$("#mkloi").textContent="Đang kiểm tra…";
+    goi("taiDuLieu",iso(weekStart(today()))).then(d=>{LS.set("ma",KEY);S.tasks=d.tasks||[];S.routines=d.routines||[];S.checks=d.checks||{};S.mode="ok";document.querySelector(".fab").hidden=false;render()})
+      .catch(er=>{KEY="";$("#mkloi").textContent=er.saiMa?"Mã chưa đúng, anh xem lại.":er.message})};
+}
+function boot(){
+  if(!KEY){khoa();return}
+  const bs=LS.get("banSao",null);
+  if(bs){S.tasks=bs.tasks||[];S.routines=bs.routines||[];S.checks=bs.checks||{}}
+  render();taiLai();
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&S.pending===0)taiLai()});
+  $("#status").addEventListener("click",()=>taiLai());
+}
+
+// ---------- Thành phần ----------
+function areaHTML(id){const a=AMAP[id];if(!a)return "";return '<span class="area" style="--ac:var(--a-'+a.id+')"><span class="dot"></span>'+esc(a.name)+'</span>'}
+function taskHTML(t,showQ){
+  const dl=dueLabel(t);
+  return '<div class="task q'+t.q+(t.done?" done":"")+'">'+
+    '<button class="tick" type="button" data-tick="'+esc(t.id)+'" aria-label="'+(t.done?"Bỏ đánh dấu xong":"Đánh dấu đã xong")+'">'+CHECK+'</button>'+
+    '<button class="tbody" type="button" data-task="'+esc(t.id)+'"><div class="ttl">'+esc(t.title)+(t.mau?' <small style="color:var(--q3)">(mẫu)</small>':'')+'</div><div class="meta">'+
+    (showQ?'<span class="qtag">Ô '+t.q+' · '+Q[t.q].verb+'</span>':'')+areaHTML(t.area)+
+    (dl&&!t.done?'<span class="'+dl.cls+'">'+esc(dl.txt)+'</span>':'')+
+    (t.delegate?'<span>Giao: '+esc(t.delegate)+'</span>':'')+'</div></button></div>';
+}
+const openTasks=()=>S.tasks.filter(t=>!t.done);
+function sortTasks(a,b){const da=a.due||"9999",dbb=b.due||"9999";if(da!==dbb)return da<dbb?-1:1;if((a.time||"99")!==(b.time||"99"))return (a.time||"99")<(b.time||"99")?-1:1;return (a.createdAt||0)-(b.createdAt||0)}
+const routinesOn=dow=>S.routines.filter(r=>(r.days||[]).includes(dow)).sort((a,b)=>(a.time||"99").localeCompare(b.time||"99"));
+const isChecked=(rid,ds)=>!!(S.checks&&S.checks.done&&(S.checks.done[rid]||[]).includes(ds));
+function rtHTML(r,ds,canCheck){
+  const on=isChecked(r.id,ds);
+  return '<div class="rt" style="--ac:var(--a-'+esc(r.area)+')"><span class="time">'+esc(r.time||"--:--")+'</span><span class="bar"></span>'+
+   '<button class="info" type="button" data-rt="'+esc(r.id)+'"><div>'+esc(r.title)+(r.mau?' <small style="display:inline;color:var(--q3)">(mẫu)</small>':'')+'</div><small>'+esc((AMAP[r.area]||{}).name||"")+' · '+hm(r.duration||60)+'</small></button>'+
+   '<button class="chk'+(on?" on":"")+'" type="button" data-chk="'+esc(r.id)+'" data-ds="'+ds+'"'+(canCheck?"":" disabled")+'>'+(on?"✓ Đã làm":"Đã làm?")+'</button></div>';
+}
+
+// ---------- Các màn ----------
+function viewToday(){
+  const t0=today(),ds=iso(t0),open=openTasks();
+  const late=open.filter(t=>t.due&&t.due<ds);
+  const todayList=open.filter(t=>t.q===1||(t.due&&t.due<=ds)).sort((a,b)=>(a.q-b.q)||sortTasks(a,b));
+  const q2free=open.filter(t=>t.q===2&&!t.due).slice(0,4);
+  const rts=routinesOn(t0.getDay());
+  const samples=S.tasks.filter(t=>t.mau).length+S.routines.filter(r=>r.mau).length;
+  // nhắc cân bằng
+  const nudges=[];const ws=weekStart(t0);const dayIdx=(t0.getDay()+6)%7;
+  AREAS.filter(a=>a.id!=="cong_viec").forEach(a=>{
+    const rs=S.routines.filter(r=>r.area===a.id);
+    if(!rs.length){nudges.push({a,txt:"Chưa có lịch cố định cho <b>"+esc(a.name)+"</b>. Đặt một buổi mỗi tuần nhé anh?",act:"add"});return}
+    if(dayIdx>=3){let did=0;rs.forEach(r=>{did+=((S.checks.done||{})[r.id]||[]).length});
+      if(!did) nudges.push({a,txt:"Tuần này anh chưa đánh dấu buổi nào cho <b>"+esc(a.name)+"</b>.",act:"week"})}
+  });
+  const h=t0.getHours?new Date().getHours():9;const greet=h<11?"Chào buổi sáng anh Huy":h<14?"Chào buổi trưa anh Huy":h<18?"Chào buổi chiều anh Huy":"Chào buổi tối anh Huy";
+  return '<section class="view">'+
+   '<div class="hello"><h2>'+greet+'</h2><p>'+DOW[t0.getDay()]+', '+dm(t0)+'/'+t0.getFullYear()+'</p><div class="chips">'+
+     '<span class="pill red">'+open.filter(t=>t.q===1).length+' việc ô 1</span>'+
+     (late.length?'<span class="pill red">'+late.length+' việc quá hạn</span>':'')+
+     '<span class="pill green">'+open.filter(t=>t.q===2).length+' việc ô 2</span>'+
+     '<span class="pill">'+rts.length+' lịch hôm nay</span></div></div>'+
+   (samples?'<div class="sample"><span>Đang có '+samples+' mục <b>mẫu</b> để anh xem cách dùng. Khi đã nhập việc thật, anh xoá đi.</span><button class="btn" type="button" id="clearSamples">Xoá hết mẫu</button></div>':'')+
+   '<div class="block"><div class="block-h"><h3>Cần làm hôm nay</h3><span class="sub">Ô 1 và việc đến hạn</span></div><div class="list">'+
+     (todayList.length?todayList.map(t=>taskHTML(t,true)).join(""):'<div class="empty">Không có việc gấp. Hôm nay là lúc tốt để làm việc ô 2.</div>')+'</div></div>'+
+   '<div class="block"><div class="block-h"><h3>Lịch hôm nay</h3><span class="sub">'+DOW[t0.getDay()]+'</span></div><div>'+
+     (rts.length?rts.map(r=>rtHTML(r,ds,true)).join(""):'<div class="empty">Hôm nay chưa có lịch cố định. Bấm “+ Lịch cố định” để thêm lịch học, thể thao, thời gian cho con…</div>')+'</div></div>'+
+   '<div class="block"><div class="block-h"><h3>Việc quan trọng chưa có ngày</h3><span class="sub">Ô 2 · đặt ngày để khỏi trôi</span></div><div class="list">'+
+     (q2free.length?q2free.map(t=>taskHTML(t,false)).join(""):'<div class="empty">Việc ô 2 nào cũng đã có ngày làm.</div>')+'</div></div>'+
+   (nudges.length?'<div class="block"><div class="block-h"><h3>Nhắc cân bằng</h3><span class="sub">Gia đình, sức khoẻ, các mối quan hệ</span></div><div class="list">'+
+     nudges.map(n=>'<div class="nudge" style="--ac:var(--a-'+n.a.id+')"><span class="dot"></span><p>'+n.txt+'</p>'+(n.act==="add"?'<button class="btn" type="button" data-addr="'+n.a.id+'">Thêm lịch</button>':'<a class="btn" href="#lich-tuan">Xem tuần</a>')+'</div>').join("")+'</div></div>':'')+
+  '</section>';
+}
+
+function viewMatrix(){
+  const open=openTasks();
+  const doneRecent=S.tasks.filter(t=>t.done).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0)).slice(0,30);
+  const quad=q=>{const list=open.filter(t=>t.q===q).sort(sortTasks);
+    return '<div class="quad q'+q+'"><div class="quad-h"><div><h3>'+Q[q].verb+'</h3><p>'+Q[q].name+'. '+Q[q].hint+'</p></div><span class="num">'+q+'</span></div>'+
+      '<div class="list">'+(list.length?list.map(t=>taskHTML(t,false)).join(""):'<div class="empty">Chưa có việc nào.</div>')+'</div>'+
+      '<button class="addq" type="button" data-addq="'+q+'">+ Thêm vào ô '+q+'</button></div>'};
+  return '<section class="view"><div class="axis"><span>← Gấp</span><span>Chưa gấp →</span></div>'+
+    '<div class="matrix">'+quad(1)+quad(2)+quad(3)+quad(4)+'</div>'+
+    (doneRecent.length?'<details class="done-list block"><summary>Đã xong gần đây ('+doneRecent.length+')</summary><div class="list" style="margin-top:8px">'+doneRecent.map(t=>taskHTML(t,true)).join("")+'</div></details>':'')+
+  '</section>';
+}
+
+function viewWeek(){
+  const ws=weekStart(today()),tds=iso(today());
+  const days=ORDER.map((dow,i)=>{const d=addDays(ws,i),ds=iso(d);const rs=routinesOn(dow);
+    const ts=S.tasks.filter(t=>t.due===ds&&!t.done).sort(sortTasks);
+    return '<div class="day'+(ds===tds?" today":"")+'"><div class="day-h"><b>'+DOW[dow]+(ds===tds?" · hôm nay":"")+'</b><span>'+dm(d)+'</span></div>'+
+      (rs.length?'<div>'+rs.map(r=>rtHTML(r,ds,ds<=tds)).join("")+'</div>':'')+
+      (ts.length?'<div class="list">'+ts.map(t=>taskHTML(t,true)).join("")+'</div>':'')+
+      (!rs.length&&!ts.length?'<div class="empty">Trống</div>':'')+'</div>'});
+  return '<section class="view"><div class="block-h"><h3 style="font-size:18px;font-family:var(--f-display)">Tuần '+dm(ws)+' – '+dm(addDays(ws,6))+'</h3><span class="sub">Bấm “Đã làm?” sau mỗi buổi</span></div><div class="week">'+days.join("")+'</div></section>';
+}
+
+function viewBalance(){
+  const rows=AREAS.map(a=>{const rs=S.routines.filter(r=>r.area===a.id);
+    const plan=rs.reduce((s,r)=>s+(r.duration||60)*(r.days||[]).length,0);
+    const did=rs.reduce((s,r)=>s+(r.duration||60)*(((S.checks.done||{})[r.id]||[]).length),0);return {a,plan,did}});
+  const max=Math.max(60,...rows.map(r=>Math.max(r.plan,r.did)));
+  const open=openTasks();const cnt=[1,2,3,4].map(q=>open.filter(t=>t.q===q).length);const tot=cnt.reduce((a,b)=>a+b,0);
+  const ws=weekStart(today()).getTime();
+  const doneWk=[1,2,3,4].map(q=>S.tasks.filter(t=>t.done&&t.q===q&&(t.doneAt||0)>=ws).length);const dtot=doneWk.reduce((a,b)=>a+b,0);
+  const stack=(arr,total)=>total?'<div class="stack">'+arr.map((n,i)=>n?'<div style="width:'+(n/total*100)+'%;background:var(--q'+(i+1)+')" title="Ô '+(i+1)+': '+n+'"></div>':'').join("")+'</div>':'<div class="empty">Chưa có số liệu.</div>';
+  const legend='<div class="legend">'+[1,2,3,4].map(q=>'<span><span class="dot" style="--ac:var(--q'+q+')"></span>Ô '+q+' · '+Q[q].verb+'</span>').join("")+'</div>';
+  const q2share=dtot?Math.round(doneWk[1]/dtot*100):null;
+  return '<section class="view">'+
+   '<div class="block"><div class="block-h"><h3>Thời gian cho từng mảng tuần này</h3><span class="sub">Nhạt: dự định · Đậm: đã làm</span></div><div class="bars">'+
+    rows.map(r=>'<div class="brow" style="--ac:var(--a-'+r.a.id+')"><span class="lbl"><span class="dot"></span>'+esc(r.a.name)+'</span><div class="track"><div class="plan" style="width:'+(r.plan/max*100)+'%"></div><div class="did" style="width:'+(r.did/max*100)+'%"></div></div><span class="val">'+(r.plan?hm(r.did)+" / "+hm(r.plan):"Chưa có lịch")+'</span></div>').join("")+
+   '</div></div>'+
+   '<div class="block"><div class="block-h"><h3>Việc đang mở theo 4 ô</h3><span class="sub">'+tot+' việc</span></div>'+stack(cnt,tot)+legend+
+    '<p class="note">Ô 1 phình to là dấu hiệu đang chữa cháy. Muốn ô 1 nhỏ lại thì phải dành giờ cố định cho ô 2.</p></div>'+
+   '<div class="block"><div class="block-h"><h3>Việc đã xong tuần này</h3><span class="sub">'+dtot+' việc</span></div>'+stack(doneWk,dtot)+
+    (q2share!==null?'<p class="note">'+q2share+'% việc anh làm xong tuần này thuộc ô 2.</p>':'')+'</div>'+
+  '</section>';
+}
+
+// ---------- Bảng nhập việc ----------
+function nhacHTML(on,txt){return '<label class="nhac"><input type="checkbox" id="nh"'+(on?" checked":"")+'><span><b>Nhắc trên điện thoại</b><small>'+txt+'</small></span></label>'}
+function areaOptions(sel){return AREAS.map(a=>'<option value="'+a.id+'"'+(a.id===sel?" selected":"")+'>'+esc(a.name)+'</option>').join("")}
+function openTask(id,preset){
+  const ex=S.tasks.find(t=>t.id===id);
+  const t=ex?clean(ex):Object.assign({id:newId(),title:"",q:2,area:"cong_viec",due:"",time:"",delegate:"",note:"",done:false,createdAt:Date.now()},preset||{});
+  const qb=q=>'<button type="button" class="qbtn q'+q+'" data-q="'+q+'" aria-pressed="'+(t.q===q)+'"><b>'+q+' · '+Q[q].verb+'</b><small>'+Q[q].name+'</small></button>';
+  if(t.dongBo===undefined) t.dongBo=true;
+  $("#modal").innerHTML='<div class="backdrop" id="bd"><form class="sheet" id="f" autocomplete="off">'+
+    '<h2>'+(ex?"Sửa việc":"Việc mới")+'</h2>'+
+    '<div class="field"><label for="ti">Việc gì?</label><input id="ti" required maxlength="200" value="'+esc(t.title)+'" placeholder="VD: Gọi lại khách Toyota Cross về PPF"></div>'+
+    '<div class="field"><span class="lab">Xếp vào ô nào?</span><div class="qpick"><span></span><span class="ax">Gấp</span><span class="ax">Chưa gấp</span>'+
+      '<span class="ax v">Quan trọng</span>'+qb(1)+qb(2)+'<span class="ax v">Ít quan trọng</span>'+qb(3)+qb(4)+'</div></div>'+
+    '<div class="field"><label for="ar">Thuộc mảng</label><select id="ar">'+areaOptions(t.area)+'</select></div>'+
+    '<div class="row2"><div class="field"><label for="du">Ngày làm / hạn</label><input id="du" type="date" value="'+esc(t.due)+'"></div><div class="field"><label for="tm">Giờ</label><input id="tm" type="time" value="'+esc(t.time)+'"></div></div>'+
+    '<div class="field"><label for="dg">Giao cho ai (nếu có)</label><input id="dg" maxlength="80" value="'+esc(t.delegate)+'" placeholder="VD: Trung Thành"></div>'+
+    '<div class="field"><label for="nt">Ghi chú</label><textarea id="nt" maxlength="1000">'+esc(t.note)+'</textarea></div>'+
+    nhacHTML(t.dongBo,"Có ngày làm thì tự đưa vào Google Lịch, điện thoại nhắc trước 30 phút (việc cả ngày: 9h sáng hôm trước).")+
+    '<div class="actions"><div class="grp"><button class="btn primary" type="submit">Lưu</button><button class="btn ghost" type="button" id="cx">Đóng</button></div>'+
+      '<div class="grp">'+(ex?'<button class="btn" type="button" id="dn">'+(t.done?"Chưa xong":"Đã xong")+'</button><button class="btn danger" type="button" id="dl">Xoá</button>':'')+'</div></div>'+
+    '<div id="cf"></div>'+
+  '</form></div>';
+  const f=$("#f");
+  f.querySelectorAll(".qbtn").forEach(b=>b.onclick=()=>{t.q=+b.dataset.q;f.querySelectorAll(".qbtn").forEach(x=>x.setAttribute("aria-pressed",String(x===b)))});
+  const read=()=>{t.title=$("#ti").value.trim();t.area=$("#ar").value;t.due=$("#du").value;t.time=$("#tm").value;t.delegate=$("#dg").value.trim();t.note=$("#nt").value.trim();t.dongBo=$("#nh").checked};
+  f.onsubmit=e=>{e.preventDefault();read();if(!t.title){$("#ti").focus();return}delete t.mau;store.saveTask(t,ex?"Đã lưu":"Đã thêm vào ô "+t.q+(t.dongBo&&t.due?", đã đặt nhắc":""));closeModal()};
+  $("#cx").onclick=closeModal;
+  $("#bd").onclick=e=>{if(e.target.id==="bd")closeModal()};
+  if(ex){
+    $("#dn").onclick=()=>{read();t.done=!t.done;t.doneAt=t.done?Date.now():null;store.saveTask(t);closeModal();toast(t.done?"Xong một việc":"Đã mở lại việc")};
+    $("#dl").onclick=()=>{$("#cf").innerHTML='<div class="confirm">Xoá hẳn việc này? <button class="btn danger" type="button" id="dly">Xoá</button><button class="btn" type="button" id="dln">Thôi</button></div>';
+      $("#dly").onclick=()=>{store.delTask(t.id);closeModal();toast("Đã xoá")};$("#dln").onclick=()=>$("#cf").innerHTML=""};
+  }
+  if(!ex) setTimeout(()=>$("#ti").focus(),50);
+}
+
+// ---------- Bảng nhập lịch cố định ----------
+function openRoutine(id,preset){
+  const ex=S.routines.find(r=>r.id===id);
+  const r=ex?clean(ex):Object.assign({id:newId(),title:"",area:"con_cai",days:[],time:"19:00",duration:60,note:"",createdAt:Date.now()},preset||{});
+  const durs=[15,30,45,60,90,120,180,240];
+  if(r.dongBo===undefined) r.dongBo=true;
+  $("#modal").innerHTML='<div class="backdrop" id="bd"><form class="sheet" id="f" autocomplete="off">'+
+    '<h2>'+(ex?"Sửa lịch cố định":"Lịch cố định mới")+'</h2>'+
+    '<p class="note">Việc lặp lại hằng tuần: đi học, đá bóng, ăn tối cùng vợ con, thăm ông bà, cà phê với bạn bè… Đây là ô 2 của anh.</p>'+
+    '<div class="field"><label for="ti">Tên lịch</label><input id="ti" required maxlength="120" value="'+esc(r.title)+'" placeholder="VD: Đưa con đi bơi"></div>'+
+    '<div class="field"><label for="ar">Thuộc mảng</label><select id="ar">'+areaOptions(r.area)+'</select></div>'+
+    '<div class="field"><span class="lab">Các ngày trong tuần</span><div class="days">'+ORDER.map(d=>'<button type="button" data-d="'+d+'" aria-pressed="'+r.days.includes(d)+'">'+DOWS[d]+'</button>').join("")+'</div></div>'+
+    '<div class="row2"><div class="field"><label for="tm">Bắt đầu lúc</label><input id="tm" type="time" required value="'+esc(r.time)+'"></div><div class="field"><label for="du">Trong bao lâu</label><select id="du">'+durs.map(m=>'<option value="'+m+'"'+(m===(r.duration||60)?" selected":"")+'>'+hm(m)+'</option>').join("")+'</select></div></div>'+
+    '<div class="field"><label for="nt">Ghi chú</label><textarea id="nt" maxlength="500" placeholder="VD: Sân Thiên Trường, mang giày">'+esc(r.note)+'</textarea></div>'+
+    nhacHTML(r.dongBo,"Tự đưa vào Google Lịch, lặp hằng tuần, điện thoại nhắc trước 30 phút.")+
+    '<div class="actions"><div class="grp"><button class="btn primary" type="submit">Lưu</button><button class="btn ghost" type="button" id="cx">Đóng</button></div>'+
+      '<div class="grp">'+(ex?'<button class="btn danger" type="button" id="dl">Xoá</button>':'')+'</div></div>'+
+    '<div id="cf"></div>'+
+  '</form></div>';
+  const f=$("#f");
+  f.querySelectorAll(".days button").forEach(b=>b.onclick=()=>{const d=+b.dataset.d;r.days=r.days.includes(d)?r.days.filter(x=>x!==d):r.days.concat(d);b.setAttribute("aria-pressed",String(r.days.includes(d)))});
+  f.onsubmit=e=>{e.preventDefault();r.title=$("#ti").value.trim();r.area=$("#ar").value;r.time=$("#tm").value;r.duration=+$("#du").value;r.note=$("#nt").value.trim();r.dongBo=$("#nh").checked;
+    if(!r.title){$("#ti").focus();return}if(!r.days.length){$("#cf").innerHTML='<div class="confirm">Anh chọn ít nhất một ngày trong tuần nhé.</div>';return}
+    delete r.mau;store.saveRoutine(r,"Đã lưu lịch"+(r.dongBo?", đã đặt nhắc":""));closeModal()};
+  $("#cx").onclick=closeModal;
+  $("#bd").onclick=e=>{if(e.target.id==="bd")closeModal()};
+  if(ex) $("#dl").onclick=()=>{$("#cf").innerHTML='<div class="confirm">Xoá lịch này? <button class="btn danger" type="button" id="dly">Xoá</button><button class="btn" type="button" id="dln">Thôi</button></div>';
+    $("#dly").onclick=()=>{store.delRoutine(r.id);closeModal();toast("Đã xoá lịch")};$("#dln").onclick=()=>$("#cf").innerHTML=""};
+  if(!ex) setTimeout(()=>$("#ti").focus(),50);
+}
+function closeModal(){$("#modal").innerHTML=""}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
+
+// ---------- Điều hướng & vẽ ----------
+const VIEWS={"hom-nay":viewToday,"ma-tran":viewMatrix,"lich-tuan":viewWeek,"can-bang":viewBalance};
+const cur=()=>VIEWS[location.hash.slice(1)]?location.hash.slice(1):"hom-nay";
+function render(){
+  setStatus();
+  if(S.mode==="khoa") return;
+  const v=cur();
+  document.querySelectorAll(".tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  $("#app").innerHTML=VIEWS[v]();
+}
+window.addEventListener("hashchange",()=>{render();window.scrollTo(0,0)});
+$("#app").addEventListener("click",e=>{
+  const b=e.target.closest("button,[data-task]");if(!b)return;
+  if(b.dataset.tick){const t=S.tasks.find(x=>x.id===b.dataset.tick);if(t){const n=clean(t);n.done=!n.done;n.doneAt=n.done?Date.now():null;store.saveTask(n);toast(n.done?"Xong một việc":"Đã mở lại việc")}return}
+  if(b.dataset.task){openTask(b.dataset.task);return}
+  if(b.dataset.rt){openRoutine(b.dataset.rt);return}
+  if(b.dataset.chk){store.toggleCheck(b.dataset.chk,b.dataset.ds);return}
+  if(b.dataset.addq){openTask(null,{q:+b.dataset.addq});return}
+  if(b.dataset.addr){openRoutine(null,{area:b.dataset.addr});return}
+  if(b.id==="clearSamples"){S.tasks.filter(t=>t.mau).forEach(t=>store.delTask(t.id));S.routines.filter(r=>r.mau).forEach(r=>store.delRoutine(r.id));toast("Đã xoá các mục mẫu");return}
+});
+$("#addT").onclick=()=>openTask(null,cur()==="hom-nay"?{q:1,due:iso(today())}:{});
+$("#addR").onclick=()=>openRoutine(null);
+boot();
+})();
+</script>
+</body>
+</html>
